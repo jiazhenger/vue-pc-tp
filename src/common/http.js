@@ -79,8 +79,6 @@ const coreRequest = (url, param, action, defined) => {
 		api		: api
 	})
 
-    console.log(body)
-
 	$fn.isFunction(UD.onStart) && UD.onStart()		// 一开始就调用
 
 	if(action === 'get'){
