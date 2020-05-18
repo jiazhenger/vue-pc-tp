@@ -69,34 +69,38 @@ const setType = (_this,dataName) => {
 const coreRequest = (url, param, action, defined) => {
 	let UD = defined || {}
 	let api = url.indexOf('http') !== -1 ? url : Config.api
-	let body = manageBody(param);			// 处理自定义参数的不同形式 {} function
-	let sParam = serializeParam(body);		// 序列化参数
+	let body = manageBody(param);				// 处理自定义参数的不同形式 {} function
+	let sParam = serializeParam(body);	// 序列化参数
+		body = UD.type === 1 ? serializeParam(body,true) : body
 	let promise;
 	let configs = config({
-		upload: UD.upload,
-		noToken: UD.noToken,
-		api: api
+		type	: UD.type,
+		noToken	: UD.noToken,
+		api		: api
 	})
+
+    console.log(body)
+
 	$fn.isFunction(UD.onStart) && UD.onStart()		// 一开始就调用
 
 	if(action === 'get'){
 		promise = axios.get(url + sParam, configs);
 		logMsg('%c' + action + ' === ' + api + url + sParam, 'color:blue')		// 输出 api
 	}else{
-		promise = UD.upload||UD.isBody ?  axios.post(url, body, configs) : axios.post(url, serializeParam(body,true), configs);
-		logMsg('%c' + action + ' === ' + api + url + ( UD.upload||UD.isBody ? JSON.stringify(body) : JSON.stringify(body)), 'color:blue')		// 输出 api
+		promise = axios.post(url, body, configs);
+		logMsg('%c' + action + ' === ' + api + url + JSON.stringify(body), 'color:blue')
 	}
 
 	// 加载效果
 	return new Promise((resolve, reject) => {
 		promise.then(res => {	// 接口正确接收数据处理
 			let data = res.data
-			let code = data.status
+			let code = data.code
 
-			if(code === 1){	// 数据请求成功
+			if(code === 200){	// 数据请求成功
 				resolve(data.data)
 				logMsg(url + '===', data.data)
-			} else if(code === -40000){	// 登录信息已过期，请重新登录!
+			} else if(code === 400){	// 登录信息已过期，请重新登录!
 				$fn.toast(data['msg'])
 				$fn.remove()
 				$fn.loginTo()
@@ -135,26 +139,26 @@ const get = (url,body,defined) => coreRequest(url,body,'get',defined)
 // ===================================================== pull 提交
 const submit = (_this,api,option)=>{
 	let opt = {
-		param:{},
-		loadingText:'数据提交中...',
-		successText:'',					// 自定义成功提示
-		succeedFn:'',					// 成功之后执行
-		errorText:'',					// 自定义错误提示
-		submitLoading:'submitLoading', 	// 加载判断
-		loading:false,
-		runFirst:true,					// 先跳转，后提示
-//		replace:null,					// replace 路由
-//		push:null,						// push 路由
-//		refresh:false,					// 是否刷新
-//		closeToast:false,				// 是否关闭默认提示
-//		onEnd:null,			// 无论请求成功或失败都执行此方法
-//		onError:null,				//
-//		upload:false,					// 调用上传接口
-//		noToken:false,
-//		isBody:false,
-//		isFullApi:false,
-		...option
-	}
+        param			: {},
+        loadingText		: '数据提交中...',
+        successText		: '',					// 自定义成功提示
+        succeedFn		: null,					// 成功之后执行
+        errorText		: '',					// 自定义错误提示
+        submitLoading	: 'submitLoading', 		// 加载判断
+        loading			: true,
+        runFirst		: true,					// 先跳转，后提示
+        type			: Config.contentType, 	// Content-Type 类型
+//		replace			: null,					// replace 路由
+//		push			: null,					// push 路由
+//		refresh			: false,				// 是否刷新
+//		closeToast		: false,				// 是否关闭默认提示
+//		onEnd			: null,					// 无论请求成功或失败都执行此方法
+//		onError			: null,					//
+//		upload			: false,				// 调用上传接口
+//		noToken			: false,
+//		isBody			: false,
+        ...option
+    }
 
 	if(_this) _this[opt.submitLoading] = true
 
@@ -168,18 +172,19 @@ const submit = (_this,api,option)=>{
 
 	return new Promise((resolve, reject)=>{
 		post(api,opt.param,{
-			onStart:()=>{ opt.onStart && opt.onStart(true) },
-			onEnd:()=>{
+			onStart : ()=>{ opt.onStart && opt.onStart(true) },
+			onEnd   : ()=>{
 				if(_this) _this[opt.submitLoading] = false
 				opt.loading && $fn.loading(false)
 				opt.onEnd && opt.onEnd(false)
 			},
-			onMsg: opt.onMsg && ( data => { $fn.isFunction(opt.onMsg) && opt.onMsg(data) }),
-			noError:opt.noError,
-			onError:opt.onError,
-			upload:opt.upload,
-			noToken:opt.noToken,
-			isBody:opt.isBody,
+			onMsg	: opt.onMsg && ( data => { $fn.isFunction(opt.onMsg) && opt.onMsg(data) }),
+			noError	: opt.noError,
+			onError	: opt.onError,
+			upload	: opt.upload,
+			noToken	: opt.noToken,
+			isBody	: opt.isBody,
+			type	: opt.type
 		}).then(data=>{
 			resolve(data)
 			// 提示后执行
