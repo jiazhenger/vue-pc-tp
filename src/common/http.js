@@ -338,8 +338,9 @@ const paging = (_this,api,option)=>{
 			if($fn.isValid(opt.dataName)){
 //				const result = $fn.addKey(data, format);
 				_this[opt.dataName] = result
-				resolve(result)
 			}
+            
+            resolve(result)
             
             const content = document.querySelector('#page')
             if(content){ content.scrollTop = 0  }
