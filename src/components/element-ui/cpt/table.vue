@@ -1,7 +1,7 @@
-<template>  
+<template>
 	<Table
 		ref 				= 'table'
-		:data				= 'data' 
+		:data				= 'data'
 		:emptyText			= 'emptyText'
 		:size 				= 'size'
 		:loading 			= 'loading'
@@ -9,17 +9,20 @@
 		:height 			= 'height'
 		:pag 				= 'pag'
 		@change 			= 'onChange'
+        @onRowClick         = 'onRowClick'
 	>
+        <slot></slot>
 		<template v-for	= '(v,i) in col'>
 			<Col
-				:prop	= 'v.prop' 
+				:prop	= 'v.prop'
 				:label	= 'v.label'
 				:width	= 'v.width'
 				:type 	= 'v.prop'
 				:align  = 'v.align'
+                :fixed  = 'v.fixed'
 			/>
 		</template>
-		<slot></slot>
+        <template slot='pleft'><slot name='pleft' /></template>
 	</Table>
 </template>
 
@@ -27,8 +30,8 @@
 	// ================================================================  class
 	export default {
 		components:{
-			Table: ()=>import('./ui/table'),
-			Col: ()=>import('./ui/table-col'),
+			Table: ()=>import('@eu/table'),
+			Col: ()=>import('@eu/table-col'),
 		},
 		props:{
 			label		:String,
@@ -50,7 +53,13 @@
 			onSelect(v){
 				this.$emit('select',v)
 			},
-			onChange(v){ this.$emit('change',v)}
+			onChange(v){ this.$emit('change',v)},
+             // 点击行触发
+            onRowClick(v){ this.$emit('onRowClick',v)},
+            // 重置滚动条
+            reset(){
+                this.$refs.table && this.$refs.table.reset()
+            }
 		}
 	}
 </script>

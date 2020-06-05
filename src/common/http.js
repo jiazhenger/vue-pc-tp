@@ -286,19 +286,21 @@ const paging = (_this,api,option)=>{
 		pagingLoading:'pagingLoading',	// 加载判断
 		resetData:false,				// 是否重新设置 data，false 不允许
 //		format:{},						// 格式化时间
-		pag:'pag'
+		pag:'pag',
+        scroll:'#page'
 	}
 
 	Object.assign(opt,option || {});
 
 	const { current, pageSize } = opt.param || {}
 	const param = {
-        ...opt.param,
 		page        : current || 1, 			    // 当前页
 		per_page    : pageSize || Config.pageSize,		// 每页显示多少条数据
+        ...opt.param,
 	}
 	delete param.pageSize
 	delete param.total
+    delete param.current
 
 	// 格式化时间
 	let format = null;
@@ -327,7 +329,7 @@ const paging = (_this,api,option)=>{
 			resetData   : true,
 			dataName    : null
 		}).then(data=>{
-            const result = data.data
+            let result = data.data
 			_this[opt.pag] = {
 				..._this[opt.pag],
 				current		: +data.current_page, 		// 当前页码
@@ -337,16 +339,23 @@ const paging = (_this,api,option)=>{
 			}
 			if($fn.isValid(opt.dataName)){
 //				const result = $fn.addKey(data, format);
+                if($fn.isFunction(opt.onSuccess)){
+                    result = opt.onSuccess(result);
+                }
 				_this[opt.dataName] = result
+
 			}
-            
-            resolve(result)
-            
-            const content = document.querySelector('#page')
+
+            resolve(data)
+
+            const content = document.querySelector(opt.scroll)
             if(content){ content.scrollTop = 0  }
+            if(_this.$refs.table){
+                _this.$refs.table.reset()
+            }
 
 			opt.callback && opt.callback(data);
 		})
 	})
 }
-export default { submit, pull, paging }
+export default { submit, pull, paging, serializeParam }

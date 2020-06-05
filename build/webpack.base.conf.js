@@ -35,7 +35,7 @@ module.exports = {
       '@js': resolve('src/assets/js'),
       '@pls': resolve('src/plugins'),
       '@cpt': resolve('src/components'),
-      '@tp': resolve('src/components/template'),
+      '@tp': resolve('src/template'),
       '@eu': resolve('src/components/element-ui'),
       '@cpx': resolve('src/components-x'),
       '@vuex': resolve('src/vuex'),

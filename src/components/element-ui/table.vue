@@ -1,20 +1,32 @@
-<template>  
-	<Loading :loading='loading'>
-		<el-table 
-			ref							= 'table'
-			:data						= 'data' 
-			:empty-text					= 'emptyText'
-			:size 						= 'size'
-			:height 					= 'height'
-			highlight-current-row
-			@selection-change			= 'getRows($event)'
-			element-loading-text 		= '数据加载中'
-			element-loading-background	= 'rgba(0, 0, 0, 0.1)'
-			:style						= '{minHeight:mh}'
-		>
-			<slot></slot>
-		</el-table>
-		<template v-if='fn.hasObject(pag)'><Pagination :pag='pag' @change='onChange' /></template>
+<template>
+	<Loading :loading='loading' ref='loading'>
+		<div class='ex'>
+            <el-table
+                class                       = 'nowrap-table'
+            	ref							= 'table'
+            	:data						= 'data'
+            	:empty-text					= 'emptyText'
+            	:size 						= 'size'
+            	:height 					= 'pag ? (height - 50) : height'
+            	highlight-current-row
+            	@selection-change			= 'getRows($event)'
+                @row-click                  = 'onRowClick'
+            	element-loading-text 		= '数据加载中'
+            	element-loading-background	= 'rgba(0, 0, 0, 0.1)'
+            	:style						= '{minHeight:mh}'
+                :border                     = 'border'
+            >
+                <template slot-scope='scope'>
+                    <slot :scope='scope'></slot>
+                </template>
+            </el-table>
+        </div>
+		<template v-if='fn.hasObject(pag) && fn.hasArray(data)'>
+            <div class='fxm'>
+                <div class='ex'><slot name='pleft' /></div>
+                <Pagination :pag='pag' @change='onChange' @sizeChange='sizeChange' />
+            </div>
+        </template>
 	</Loading>
 </template>
 
@@ -27,7 +39,7 @@
 	export default {
 		components:{
 			Loading: ()=>import('@cpx/loading-wraper'),
-			Pagination: ()=>import('@cpt/ui/pagination'),
+			Pagination: ()=>import('@eu/pagination'),
 		},
 		props:{
 			size		: { type:String, default:'mini' },
@@ -37,6 +49,7 @@
 			height		: Number,
 			mh			: { type:String, default:'90px' },
 			emptyText	: { type:String, default:'暂无数据' },
+            border		: { type:Boolean, default:true },
 		},
 		data(){
 			return {
@@ -62,7 +75,26 @@
 			clear(){
 				this.$refs.table.clearSelection()
 			},
-			onChange(v){ this.$emit('change',v)}
+            // 当前页发生改变时触发
+			onChange(v){ this.$emit('change',v) },
+            // 每页显示条数改变时触发
+            sizeChange(v){ this.$emit('sizeChange',v)},
+            // 点击行触发
+            onRowClick(v,b){
+                this.$emit('onRowClick',v);
+                v.zer_checked = !v.zer_checked
+                this.$refs.table.toggleRowSelection(v,v.zer_checked);
+            },
+            // 重置滚动条
+            reset(v){
+                const t = this.$refs.table
+                if(t && t.$el){
+                    const q = t.$el.querySelector('.is-scrolling-none')
+                    if(q){
+                        q.scrollTop = 0
+                    }
+                }
+            }
 		}
 	}
 </script>

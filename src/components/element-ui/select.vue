@@ -1,4 +1,4 @@
-<template>  
+<template>
 	<el-select
 		v-model 		= 'myModel'
 		:placeholder 	= 'p'
@@ -38,7 +38,7 @@
 			data		: { type:Array, default:[] },
 			labelStr	: { type:String, default:'label' },
 			valueStr	: { type:String, default:'value' },
-			model 		: [String,Array],
+			model 		: [String,Array, Object,Number],
 			// select 配置
 			p			: { type:String, default:'请选择' },
 			size		: { type:String, default:'mini' },
@@ -58,7 +58,8 @@
 		methods:{
 			change(v){ this.value = v },
 			clear(){ this.$emit('clear') },
-			setValue(v){ this.myModel = v }
+			setValue(v){ this.myModel = v },
+            reset(){ this.setValue(null) }
 		},
 		watch:{
 			myModel(v){ this.$emit('change',v)  } // 这里检测 myModel，一旦发生变化就提交事件到父组件
